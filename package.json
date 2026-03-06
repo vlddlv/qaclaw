@@ -1,0 +1,14 @@
+{
+  "name": "dado-qa-agent",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Autonomous QA agent for Dado HR",
+  "main": "qa-runner.js",
+  "scripts": {
+    "test": "node qa-runner.js"
+  },
+  "dependencies": {
+"@browserbasehq/stagehand": "^3.1.0",
+    "zod": "^3.23.0",
+    "dotenv": "^16.4.5"  }
+}
