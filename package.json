@@ -1,0 +1,46 @@
+{
+  "name": "qaclaw",
+  "version": "2.0.5",
+  "type": "module",
+  "description": "Autonomous QA agent - runs browser-based tests via MCP",
+  "main": "runner.js",
+  "bin": {
+    "qaclaw": "runner.js"
+  },
+  "scripts": {
+    "test": "node runner.js",
+    "mcp": "node mcp.js"
+  },
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "claude-code",
+    "cursor",
+    "qa",
+    "testing",
+    "e2e",
+    "end-to-end",
+    "web-testing",
+    "test-automation",
+    "regression-testing",
+    "browser-automation",
+    "headless-browser",
+    "stagehand",
+    "playwright",
+    "ai-testing",
+    "autonomous-qa",
+    "ai-agent",
+    "llm",
+    "gemini",
+    "autonomous",
+    "night-shift"
+  ],
+  "dependencies": {
+    "@browserbasehq/stagehand": "^3.2.0",
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "ai": "^5.0.0",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.0"
+  }
+}
