@@ -6,7 +6,7 @@
   "main": "runner.js",
   "scripts": {
     "test": "node runner.js",
-    "mcp": "node mcp-server.js"
+    "mcp": "node mcp.js"
   },
   "dependencies": {
     "@browserbasehq/stagehand": "^3.1.0",

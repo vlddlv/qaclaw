@@ -16,16 +16,6 @@ The agent uses [Stagehand](https://github.com/browserbase/stagehand) to drive a 
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    Caller["Your AI tool\n(Claude Code, Cursor, Copilot, etc.)\nthe caller — sends test instructions, relays answers"]
-    MCP["mcp-server.js — transport layer\nExposes test and respond tools\nSpawns runner.js as a child process\nBridges communication via temp files\nNo reasoning — just plumbing"]
-    Agent["runner.js — the agent\n1. Preflight planner breaks prompt into steps\n2. Stagehand agent.execute() loop per step\n3. Stuck detection → model escalation or ask caller\n4. Audit phase verifies expected outcomes"]
-
-    Caller -->|"MCP (stdio)"| MCP
-    MCP -->|"child process + file IPC"| Agent
-```
-
 ### Communication flow
 
 **Happy path** — test runs without questions:
@@ -33,8 +23,8 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     participant Caller
-    participant MCP as mcp-server.js
-    participant Agent as runner.js
+    participant MCP as MCP
+    participant Agent as Runner
 
     Caller->>MCP: test(prompt)
     MCP->>Agent: spawn
@@ -53,8 +43,8 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Caller
-    participant MCP as mcp-server.js
-    participant Agent as runner.js
+    participant MCP as MCP
+    participant Agent as Runner
 
     Caller->>MCP: test(prompt)
     MCP->>Agent: spawn
@@ -121,7 +111,7 @@ Add to your AI tool's MCP config:
   "mcpServers": {
     "qaclaw": {
       "command": "node",
-      "args": ["mcp-server.js"],
+      "args": ["mcp.js"],
       "cwd": "/path/to/qaclaw"
     }
   }
