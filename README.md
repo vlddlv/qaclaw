@@ -106,11 +106,8 @@ Works with **Claude Code**, **Cursor**, **Windsurf**, **Continue**, **Open Code*
 
 ## CLI usage
 
-Install globally first, then use the `qaclaw-run` command:
-
 ```bash
-npm install -g qaclaw
-qaclaw-run "Go to /settings, change timezone to PST, verify it shows in the header"
+qaclaw "Go to /settings, change timezone to PST, verify it shows in the header"
 ```
 
 In CLI mode, clarifications are handled interactively via stdin instead of the MCP bridge.
