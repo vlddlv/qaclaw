@@ -1,6 +1,5 @@
 <div align="center">
-  <h1>QACLAW</h1>
-  <p>An autonomous QA agent exposed over MCP</p>
+  <h1>QACLAW - An autonomous QA agent exposed over MCP</h1>
   <a href="https://www.npmjs.com/package/qaclaw"><img src="https://img.shields.io/npm/v/qaclaw" alt="npm" /></a>
 </div>
 
@@ -8,7 +7,7 @@
 
 > **Experimental.** This is an early stage tool. Expect rough edges, breaking changes, and incomplete coverage of edge cases.
 
-An autonomous QA agent exposed over MCP. Give it test instructions in plain English and it opens a headless browser, executes the steps, handles failures, and returns pass/fail results.
+Give it test instructions in plain English and it opens a headless browser, executes the steps, handles failures, and returns pass/fail results.
 
 Built for the [night shift agents](https://jamon.dev/night-shift) workflow — queue up your QA runs before you finish for the day and come back to results in the morning. The agent works autonomously: it plans, executes, recovers from failures, asks clarifying questions when truly stuck, and learns from each run so the next one is faster.
 
@@ -30,6 +29,14 @@ GOOGLE_API_KEY=your-key        # for google/* models (default)
 ANTHROPIC_API_KEY=your-key     # for anthropic/* models
 OPENAI_API_KEY=your-key        # for openai/* models
 ```
+
+## Standalone CLI
+
+```bash
+qaclaw "Navigate to /users, create a new user, verify it appears in the list"
+```
+
+In CLI mode, clarifications are handled interactively via stdin instead of the MCP bridge.
 
 ## MCP Configuration
 
@@ -65,14 +72,6 @@ No clone or install needed. If you have the repo checked out locally, you can po
 ```
 
 Works with any MCP capable tool: Claude Code, Cursor, Windsurf, Continue, Open Code, etc.
-
-## Standalone CLI
-
-```bash
-qaclaw "Navigate to /users, create a new user, verify it appears in the list"
-```
-
-In CLI mode, clarifications are handled interactively via stdin instead of the MCP bridge.
 
 ## Configuration
 
