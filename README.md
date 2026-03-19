@@ -1,4 +1,10 @@
-# qaclaw
+<div align="center">
+  <img src="logo.png" alt="qaclaw" width="200" />
+  <h1>QACLAW</h1>
+  <p>An autonomous QA agent exposed over MCP</p>
+</div>
+
+---
 
 > **Experimental.** This is an early stage tool. Expect rough edges, breaking changes, and incomplete coverage of edge cases.
 
