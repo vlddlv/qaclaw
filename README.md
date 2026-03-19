@@ -14,6 +14,102 @@ Built for the [night shift agents](https://jamon.dev/night-shift) workflow — q
 
 The agent uses [Stagehand](https://github.com/browserbase/stagehand) to drive a real browser with an AI model that can see the page, decide what to click, and recover when things go wrong. The MCP server is just the transport layer; the agent is `runner.js`.
 
+## Setup
+
+```bash
+npm install -g qaclaw
+```
+
+Or use directly without installing via `npx qaclaw@latest`.
+
+Create a `.env` file with the API key for your chosen model provider:
+
+```bash
+# Pick the one that matches your QA_MODEL provider
+GOOGLE_API_KEY=your-key        # for google/* models (default)
+ANTHROPIC_API_KEY=your-key     # for anthropic/* models
+OPENAI_API_KEY=your-key        # for openai/* models
+```
+
+## MCP Configuration
+
+Add to your AI tool's MCP config:
+
+```json
+{
+  "mcpServers": {
+    "qaclaw": {
+      "command": "npx",
+      "args": ["qaclaw@latest"],
+      "env": {
+        "GOOGLE_API_KEY": "your-key",
+        "QA_TARGET_URL": "http://localhost:3100"
+      }
+    }
+  }
+}
+```
+
+No clone or install needed. If you have the repo checked out locally, you can point directly at it instead:
+
+```json
+{
+  "mcpServers": {
+    "qaclaw": {
+      "command": "node",
+      "args": ["mcp.js"],
+      "cwd": "/path/to/qaclaw"
+    }
+  }
+}
+```
+
+Works with any MCP capable tool: Claude Code, Cursor, Windsurf, Continue, Open Code, etc.
+
+## Standalone CLI
+
+```bash
+qaclaw "Navigate to /users, create a new user, verify it appears in the list"
+```
+
+In CLI mode, clarifications are handled interactively via stdin instead of the MCP bridge.
+
+## Configuration
+
+All configuration is via environment variables. Set them in `.env` or your shell.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `QA_TARGET_URL` | `http://localhost:3100` | URL of the app to test |
+| `QA_MODEL` | `google/gemini-2.5-pro` | Primary model (`provider/model`) |
+| `QA_FALLBACK_MODEL` | `google/gemini-2.5-flash` | Fallback model for stuck recovery |
+| `QA_PLANNER_MODEL` | same as fallback | Model for the preflight planner |
+| `QA_HEADLESS` | `true` | Set `false` to see the browser |
+| `QA_VIEWPORT_WIDTH` | `1920` | Browser viewport width |
+| `QA_VIEWPORT_HEIGHT` | `1080` | Browser viewport height |
+| `QA_CHROME_PROFILE` | (see hints) | Path to a Chrome user data dir |
+
+Model format is `provider/model-name`. The agent picks the right API key env var based on the provider prefix (`google/` → `GOOGLE_API_KEY`, etc).
+
+## Commands and Skills
+
+For AI tools that support project level commands or skills, you can create a shortcut that wraps the protocol above. The implementation depends on your tool:
+
+**Claude Code** — create `.claude/commands/qa.md`:
+```markdown
+Run a QA test. Call the `test` MCP tool with $ARGUMENTS as the prompt.
+If the response has a `question`, answer it with `respond` or ask the user.
+Repeat until status is completed or failed. Report the results.
+```
+
+**Cursor** — add to `.cursor/rules`:
+```
+When asked to run QA tests, use the `test` MCP tool with the user's instructions.
+Handle clarifications by calling `respond`. Report pass/fail results.
+```
+
+**Other tools** — the tool descriptions are self documenting. Most MCP capable tools will figure out the protocol from the descriptions alone. A command or skill just makes it invocable by name (e.g. `/qa`).
+
 ## Architecture
 
 ### Communication flow
@@ -70,77 +166,6 @@ The caller (your AI tool) doesn't drive the browser. The agent does. This means:
 * **Model agnostic** — works regardless of what the calling LLM is. Claude, GPT, Gemini, local models — anything that speaks MCP.
 * **Autonomous recovery** — the agent handles stuck situations, model escalation, and retries on its own. It only asks the caller when all else fails.
 
-## Setup
-
-Install from npm:
-
-```bash
-npm install -g qaclaw
-```
-
-Or use directly without installing via `npx qaclaw@latest`.
-
-Create a `.env` file with the API key for your chosen model provider:
-
-```bash
-# Pick the one that matches your QA_MODEL provider
-GOOGLE_API_KEY=your-key        # for google/* models (default)
-ANTHROPIC_API_KEY=your-key     # for anthropic/* models
-OPENAI_API_KEY=your-key        # for openai/* models
-```
-
-## Configuration
-
-All configuration is via environment variables. Set them in `.env` or your shell.
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `QA_TARGET_URL` | `http://localhost:3100` | URL of the app to test |
-| `QA_MODEL` | `google/gemini-2.5-pro` | Primary model (`provider/model`) |
-| `QA_FALLBACK_MODEL` | `google/gemini-2.5-flash` | Fallback model for stuck recovery |
-| `QA_PLANNER_MODEL` | same as fallback | Model for the preflight planner |
-| `QA_HEADLESS` | `true` | Set `false` to see the browser |
-| `QA_VIEWPORT_WIDTH` | `1920` | Browser viewport width |
-| `QA_VIEWPORT_HEIGHT` | `1080` | Browser viewport height |
-| `QA_CHROME_PROFILE` | (see hints) | Path to a Chrome user data dir |
-
-Model format is `provider/model-name`. The agent picks the right API key env var based on the provider prefix (`google/` → `GOOGLE_API_KEY`, etc).
-
-## MCP Configuration
-
-Add to your AI tool's MCP config:
-
-```json
-{
-  "mcpServers": {
-    "qaclaw": {
-      "command": "npx",
-      "args": ["qaclaw@latest"],
-      "env": {
-        "GOOGLE_API_KEY": "your-key",
-        "QA_TARGET_URL": "http://localhost:3100"
-      }
-    }
-  }
-}
-```
-
-No clone or install needed. If you have the repo checked out locally, you can point directly at it instead:
-
-```json
-{
-  "mcpServers": {
-    "qaclaw": {
-      "command": "node",
-      "args": ["mcp.js"],
-      "cwd": "/path/to/qaclaw"
-    }
-  }
-}
-```
-
-Works with any MCP capable tool: Claude Code, Cursor, Windsurf, Continue, Open Code, etc.
-
 ## Tools
 
 Two tools. The protocol is embedded in the tool descriptions so any LLM reading the tool list knows how to use them without extra setup.
@@ -179,33 +204,6 @@ flowchart TD
     B -->|waiting_clarification| E["respond(session_id, answer)"]
     E --> B
 ```
-
-## Commands and Skills
-
-For AI tools that support project level commands or skills, you can create a shortcut that wraps the protocol above. The implementation depends on your tool:
-
-**Claude Code** — create `.claude/commands/qa.md`:
-```markdown
-Run a QA test. Call the `test` MCP tool with $ARGUMENTS as the prompt.
-If the response has a `question`, answer it with `respond` or ask the user.
-Repeat until status is completed or failed. Report the results.
-```
-
-**Cursor** — add to `.cursor/rules`:
-```
-When asked to run QA tests, use the `test` MCP tool with the user's instructions.
-Handle clarifications by calling `respond`. Report pass/fail results.
-```
-
-**Other tools** — the tool descriptions are self documenting. Most MCP capable tools will figure out the protocol from the descriptions alone. A command or skill just makes it invocable by name (e.g. `/qa`).
-
-## Standalone CLI
-
-```bash
-node runner.js "Navigate to /users, create a new user, verify it appears in the list"
-```
-
-In CLI mode, clarifications are handled interactively via stdin instead of the MCP bridge.
 
 ## Agent Internals
 
