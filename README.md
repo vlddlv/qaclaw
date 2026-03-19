@@ -3,7 +3,7 @@
   <a href="https://www.npmjs.com/package/qaclaw"><img src="https://img.shields.io/npm/v/qaclaw" alt="npm" /></a>
 </div>
 
-> **Experimental.** This is an early stage tool. Expect rough edges, breaking changes, and incomplete coverage of edge cases.
+> **This is an early stage tool.** Expect rough edges, breaking changes, and incomplete coverage of edge cases.
 
 Give it test instructions in plain English and it opens a headless browser, executes the steps, handles failures, and returns pass/fail results.
 
