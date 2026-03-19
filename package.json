@@ -1,14 +1,18 @@
 {
-  "name": "dado-qa-agent",
-  "version": "1.0.0",
+  "name": "qaclaw",
+  "version": "2.0.0",
   "type": "module",
-  "description": "Autonomous QA agent for Dado HR",
-  "main": "qa-runner.js",
+  "description": "Autonomous QA agent - runs browser-based tests via MCP",
+  "main": "runner.js",
   "scripts": {
-    "test": "node qa-runner.js"
+    "test": "node runner.js",
+    "mcp": "node mcp-server.js"
   },
   "dependencies": {
-"@browserbasehq/stagehand": "^3.1.0",
-    "zod": "^3.23.0",
-    "dotenv": "^16.4.5"  }
+    "@browserbasehq/stagehand": "^3.1.0",
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "ai": "^5.0.0",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.0"
+  }
 }
