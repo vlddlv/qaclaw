@@ -1,12 +1,12 @@
 # qaclaw
 
-> **Experimental.** This is an early-stage tool. Expect rough edges, breaking changes, and incomplete coverage of edge cases.
+> **Experimental.** This is an early stage tool. Expect rough edges, breaking changes, and incomplete coverage of edge cases.
 
-An autonomous QA agent exposed over MCP. Give it test instructions in plain English - it opens a headless browser, executes the steps, handles failures, and returns pass/fail results.
+An autonomous QA agent exposed over MCP. Give it test instructions in plain English and it opens a headless browser, executes the steps, handles failures, and returns pass/fail results.
 
-Built for the [night shift agents](https://jamon.dev/night-shift) workflow — queue up your QA runs before you finish for the day, and come back to results in the morning. The agent works autonomously: it plans, executes, recovers from failures, asks clarifying questions when truly stuck, and learns from each run so the next one is faster.
+Built for the [night shift agents](https://jamon.dev/night-shift) workflow — queue up your QA runs before you finish for the day and come back to results in the morning. The agent works autonomously: it plans, executes, recovers from failures, asks clarifying questions when truly stuck, and learns from each run so the next one is faster.
 
-The agent uses [Stagehand](https://github.com/browserbase/stagehand) to drive a real browser with an AI model that can see the page, decide what to click, and recover when things go wrong. The MCP server is just the transport layer - the agent is `runner.js`.
+The agent uses [Stagehand](https://github.com/browserbase/stagehand) to drive a real browser with an AI model that can see the page, decide what to click, and recover when things go wrong. The MCP server is just the transport layer; the agent is `runner.js`.
 
 ## Architecture
 
@@ -22,7 +22,7 @@ flowchart TD
 
 ### Communication flow
 
-**Happy path** - test runs without questions:
+**Happy path** — test runs without questions:
 
 ```mermaid
 sequenceDiagram
@@ -42,7 +42,7 @@ sequenceDiagram
     MCP-->>Caller: { status: completed }
 ```
 
-**With clarification** - agent gets stuck and needs input:
+**With clarification** — agent gets stuck and needs input:
 
 ```mermaid
 sequenceDiagram
@@ -70,9 +70,9 @@ sequenceDiagram
 
 The caller (your AI tool) doesn't drive the browser. The agent does. This means:
 
-- **Fire and forget** - send instructions, get results. The caller doesn't manage browser state.
-- **Model agnostic** - works regardless of what the calling LLM is. Claude, GPT, Gemini, local models - anything that speaks MCP.
-- **Autonomous recovery** - the agent handles stuck situations, model escalation, and retries on its own. It only asks the caller when all else fails.
+* **Fire and forget** — send instructions, get results. The caller doesn't manage browser state.
+* **Model agnostic** — works regardless of what the calling LLM is. Claude, GPT, Gemini, local models — anything that speaks MCP.
+* **Autonomous recovery** — the agent handles stuck situations, model escalation, and retries on its own. It only asks the caller when all else fails.
 
 ## Setup
 
@@ -122,11 +122,11 @@ Add to your AI tool's MCP config:
 }
 ```
 
-Works with any MCP-capable tool: Claude Code, Cursor, Windsurf, Continue, Open Code, etc.
+Works with any MCP capable tool: Claude Code, Cursor, Windsurf, Continue, Open Code, etc.
 
 ## Tools
 
-Two tools. The protocol is embedded in the tool descriptions, so any LLM reading the tool list knows how to use them without extra setup.
+Two tools. The protocol is embedded in the tool descriptions so any LLM reading the tool list knows how to use them without extra setup.
 
 ### `test`
 
@@ -165,22 +165,22 @@ flowchart TD
 
 ## Commands and Skills
 
-For AI tools that support project-level commands or skills, you can create a shortcut that wraps the protocol above. The implementation depends on your tool:
+For AI tools that support project level commands or skills, you can create a shortcut that wraps the protocol above. The implementation depends on your tool:
 
-**Claude Code** - create `.claude/commands/qa.md`:
+**Claude Code** — create `.claude/commands/qa.md`:
 ```markdown
 Run a QA test. Call the `test` MCP tool with $ARGUMENTS as the prompt.
 If the response has a `question`, answer it with `respond` or ask the user.
 Repeat until status is completed or failed. Report the results.
 ```
 
-**Cursor** - add to `.cursor/rules`:
+**Cursor** — add to `.cursor/rules`:
 ```
 When asked to run QA tests, use the `test` MCP tool with the user's instructions.
 Handle clarifications by calling `respond`. Report pass/fail results.
 ```
 
-**Other tools** - the tool descriptions are self-documenting. Most MCP-capable tools will figure out the protocol from the descriptions alone. A command/skill just makes it invocable by name (e.g. `/qa`).
+**Other tools** — the tool descriptions are self documenting. Most MCP capable tools will figure out the protocol from the descriptions alone. A command or skill just makes it invocable by name (e.g. `/qa`).
 
 ## Standalone CLI
 
@@ -198,7 +198,7 @@ Breaks the prompt into steps with dependency tracking. Independent steps run in 
 
 ### Execution loop
 
-Each step runs via `stagehand.agent.execute()` - the inner LLM sees the page, decides what to do, and acts. The runner monitors for stuck patterns (passive-spinning, repeated identical actions, stuck keywords) and escalates.
+Each step runs via `stagehand.agent.execute()`. The inner LLM sees the page, decides what to do, and acts. The runner monitors for stuck patterns (passive spinning, repeated identical actions, stuck keywords) and escalates.
 
 ### Model escalation
 
@@ -211,13 +211,13 @@ flowchart LR
 
 ### Clarifications
 
-When the agent encounters something ambiguous - a term it doesn't understand, a file it needs, a decision it can't make - it asks for clarification. Answers are **persisted** to `.qa-agent/clarifications.json`, scoped by a hash of the prompt.
+When the agent encounters something ambiguous — a term it doesn't understand, a file it needs, a decision it can't make — it asks for clarification. Answers are **persisted** to `.qa-agent/clarifications.json`, scoped by a hash of the prompt.
 
 On subsequent runs of the same test, the agent loads matching clarifications and injects them into its instructions. It also feeds them to the preflight planner so it doesn't re-ask resolved questions.
 
 Clarifications are scoped:
-- **Prompt-scoped** - tied to a specific test prompt (by hash). Only loaded when that exact prompt runs again.
-- **Global** - no scope. Loaded for every test. Useful for general knowledge like "the admin password is X".
+* **Prompt scoped** — tied to a specific test prompt (by hash). Only loaded when that exact prompt runs again.
+* **Global** — no scope. Loaded for every test. Useful for general knowledge like "the admin password is X".
 
 This means the agent learns from each run. The first run might ask 3 questions; the second run asks zero.
 
@@ -227,10 +227,10 @@ After a successful test run, the agent saves the action sequence (navigation, cl
 
 On repeat runs:
 1. The recipe is loaded and injected as "suggested steps" in the agent's instructions
-2. The preflight planner is **skipped entirely** - the recipe already provides a plan
+2. The preflight planner is **skipped entirely** — the recipe already provides a plan
 3. Any clarifications from the recipe are merged into the current set
 
-The agent still has full autonomy - if the recipe's steps fail (UI changed, different state), it falls back to exploration. But when the UI is stable, recipes make repeated runs significantly faster.
+The agent still has full autonomy. If the recipe's steps fail (UI changed, different state), it falls back to exploration. But when the UI is stable, recipes make repeated runs significantly faster.
 
 Recipes are invalidated automatically when the agent gets stuck during a replay, so stale recipes don't cause loops.
 
@@ -242,12 +242,12 @@ Combined with recipes (skip the planner) and clarifications (skip the questions)
 
 ### Audit phase
 
-If the prompt includes "expected outcome" text, a separate agent pass runs after execution. It navigates the app and verifies each expected outcome against the actual state, producing per-item verdicts:
+If the prompt includes "expected outcome" text, a separate agent pass runs after execution. It navigates the app and verifies each expected outcome against the actual state, producing per item verdicts:
 
 ```
-✅ PASSED - timezone shows PST in the header
-❌ FAILED - notification preference still shows "email", expected "slack"
-⚠️  UNKNOWN - cannot verify email was sent (requires inbox access)
+✅ PASSED — timezone shows PST in the header
+❌ FAILED — notification preference still shows "email", expected "slack"
+⚠️  UNKNOWN — cannot verify email was sent (requires inbox access)
 ```
 
 ## Hints
@@ -268,7 +268,7 @@ If your app requires login (SSO, OAuth, session cookies), create a dedicated Chr
 QA_CHROME_PROFILE="$HOME/Library/Application Support/Google/Chrome-QAClaw"
 ```
 
-Set `QA_CHROME_PROFILE` in your `.env` or pass it as an environment variable. The agent will launch Chrome with that profile, inheriting the logged-in session.
+Set `QA_CHROME_PROFILE` in your `.env` or pass it as an environment variable. The agent will launch Chrome with that profile, inheriting the logged in session.
 
 ### Watching the agent work
 
@@ -276,10 +276,10 @@ Set `QA_HEADLESS=false` to open a visible browser window. Useful for debugging o
 
 ### Writing good prompts
 
-- Be specific about what to test: "Go to /users, click 'Add User', fill in name 'Test User', click Save, verify 'Test User' appears in the list"
-- Include expected outcomes: append "Expected outcome: the user appears in the user list with status 'Active'" - this triggers the audit phase
-- For multi-step workflows, describe them in order - the planner will figure out dependencies
+* Be specific about what to test: "Go to /users, click 'Add User', fill in name 'Test User', click Save, verify 'Test User' appears in the list"
+* Include expected outcomes: append "Expected outcome: the user appears in the user list with status 'Active'" — this triggers the audit phase
+* For multi step workflows, describe them in order — the planner will figure out dependencies
 
 ## Logs
 
-All output is written to `.qa-agent/runner.log`. MCP responses are truncated to ~8000 chars - check the log for the full trace.
+All output is written to `.qa-agent/runner.log`. MCP responses are truncated to ~8000 chars — check the log for the full trace.
