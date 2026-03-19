@@ -1,6 +1,7 @@
 <div align="center">
   <h1>QACLAW</h1>
   <p>An autonomous QA agent exposed over MCP</p>
+  <a href="https://www.npmjs.com/package/qaclaw"><img src="https://img.shields.io/npm/v/qaclaw" alt="npm" /></a>
 </div>
 
 ---
@@ -71,9 +72,13 @@ The caller (your AI tool) doesn't drive the browser. The agent does. This means:
 
 ## Setup
 
+Install from npm:
+
 ```bash
-npm install
+npm install -g qaclaw
 ```
+
+Or use directly without installing via `npx qaclaw@latest`.
 
 Create a `.env` file with the API key for your chosen model provider:
 
