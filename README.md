@@ -75,7 +75,7 @@ Add to your AI tool's MCP config:
       "command": "npx",
       "args": ["qaclaw@latest"],
       "env": {
-        "GOOGLE_GENERATIVE_AI_API_KEY": "your-key",
+        "GOOGLE_API_KEY": "your-key",
         "QA_TARGET_URL": "http://localhost:3100"
       }
     }
@@ -123,7 +123,7 @@ In CLI mode, clarifications are handled interactively via stdin instead of the M
 
 ```bash
 # Pick one provider
-export GOOGLE_GENERATIVE_AI_API_KEY=your-key       # google/* models (default)
+export GOOGLE_API_KEY=your-key       # google/* models (default)
 export ANTHROPIC_API_KEY=your-key    # anthropic/* models
 export OPENAI_API_KEY=your-key       # openai/* models
 ```

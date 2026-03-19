@@ -1,3 +1,7 @@
+if (process.env.GOOGLE_API_KEY && !process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+  process.env.GOOGLE_GENERATIVE_AI_API_KEY = process.env.GOOGLE_API_KEY;
+}
+
 export const CONFIG = {
   targetUrl:      process.env.QA_TARGET_URL      || "http://localhost:3100",
   model:          process.env.QA_MODEL           || "google/gemini-2.5-pro",
@@ -16,6 +20,6 @@ export function parseModel(modelStr) {
 }
 
 export function getApiKeyForProvider(provider) {
-  const envMap = { google: "GOOGLE_GENERATIVE_AI_API_KEY", anthropic: "ANTHROPIC_API_KEY", openai: "OPENAI_API_KEY" };
+  const envMap = { google: "GOOGLE_API_KEY", anthropic: "ANTHROPIC_API_KEY", openai: "OPENAI_API_KEY" };
   return process.env[envMap[provider] || `${provider.toUpperCase()}_API_KEY`];
 }
