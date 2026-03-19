@@ -19,6 +19,7 @@ CRITICAL RULES - you MUST follow these without exception:
 4. NEVER navigate away from the current task to try a different approach on your own.
 5. If you do not understand what a term or instruction means, or you cannot find where to perform an action in the UI, stop immediately and ask a specific question.
 6. The app ALWAYS runs at ${targetUrl}. NEVER navigate to any other localhost port. If you find yourself on a different port, immediately go back to ${targetUrl}.
+7. If you encounter a login page or authentication wall and do not have credentials, output [STUCK] immediately and ask for the email and password. NEVER guess credentials.
 
 BACKGROUND CLICK WORKAROUND:
 Some UI elements use ev.target checks that only respond when the click lands directly on the background container - not on any child element. Stagehand's act() tool resolves selectors to specific child nodes, so clicks on these containers silently fail.
@@ -135,6 +136,9 @@ export async function runStep(step, { stagehand, clarifications, promptScope, mo
     "[stuck]:", "[needs_help]:", "upload", "attach", "missing",
     "inconsistent", "not found", "unable to", "cannot", "can't find",
     "don't know how", "unclear",
+    "incorrect password", "invalid password", "wrong password",
+    "invalid credentials", "incorrect credentials", "login failed",
+    "authentication failed", "invalid email", "incorrect email",
   ];
   const INACTIVITY_MS = 180_000; // 3 min
 
