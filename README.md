@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="src/logo.png" alt="qaclaw" width="200" />
   <h1>QACLAW</h1>
   <p>An autonomous QA agent exposed over MCP</p>
 </div>
