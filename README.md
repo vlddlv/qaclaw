@@ -28,7 +28,7 @@ ANTHROPIC_API_KEY=your-key     # for anthropic/* models
 OPENAI_API_KEY=your-key        # for openai/* models
 ```
 
-## Standalone CLI
+## CLI
 
 ```bash
 qaclaw "Navigate to /users, create a new user, verify it appears in the list"
