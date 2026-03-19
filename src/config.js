@@ -16,6 +16,6 @@ export function parseModel(modelStr) {
 }
 
 export function getApiKeyForProvider(provider) {
-  const envMap = { google: "GOOGLE_API_KEY", anthropic: "ANTHROPIC_API_KEY", openai: "OPENAI_API_KEY" };
+  const envMap = { google: "GOOGLE_GENERATIVE_AI_API_KEY", anthropic: "ANTHROPIC_API_KEY", openai: "OPENAI_API_KEY" };
   return process.env[envMap[provider] || `${provider.toUpperCase()}_API_KEY`];
 }
