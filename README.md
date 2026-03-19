@@ -37,10 +37,6 @@ npm install -g qaclaw
 
 Or run directly without installing:
 
-```bash
-npx qaclaw@latest "Navigate to /users, create a new user, verify it appears in the list"
-```
-
 That's it. No config files, no test framework, no selectors. Just describe what to test.
 
 ---
@@ -110,8 +106,11 @@ Works with **Claude Code**, **Cursor**, **Windsurf**, **Continue**, **Open Code*
 
 ## CLI usage
 
+Install globally first, then use the `qaclaw-run` command:
+
 ```bash
-qaclaw "Go to /settings, change timezone to PST, verify it shows in the header"
+npm install -g qaclaw
+qaclaw-run "Go to /settings, change timezone to PST, verify it shows in the header"
 ```
 
 In CLI mode, clarifications are handled interactively via stdin instead of the MCP bridge.
