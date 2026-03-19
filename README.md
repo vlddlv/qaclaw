@@ -1,6 +1,10 @@
 # qaclaw
 
+> **Experimental.** This is an early-stage tool. Expect rough edges, breaking changes, and incomplete coverage of edge cases.
+
 An autonomous QA agent exposed over MCP. Give it test instructions in plain English - it opens a headless browser, executes the steps, handles failures, and returns pass/fail results.
+
+Built for the [night shift agents](https://jamon.dev/night-shift) workflow — queue up your QA runs before you finish for the day, and come back to results in the morning. The agent works autonomously: it plans, executes, recovers from failures, asks clarifying questions when truly stuck, and learns from each run so the next one is faster.
 
 The agent uses [Stagehand](https://github.com/browserbase/stagehand) to drive a real browser with an AI model that can see the page, decide what to click, and recover when things go wrong. The MCP server is just the transport layer - the agent is `runner.js`.
 
