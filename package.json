@@ -11,6 +11,7 @@
     "test": "node runner.js",
     "mcp": "node mcp.js"
   },
+  "keywords": ["mcp", "claude-code", "qa", "testing", "browser-automation", "stagehand", "playwright", "ai-testing", "autonomous-qa"],
   "dependencies": {
     "@browserbasehq/stagehand": "^3.1.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
