@@ -110,6 +110,23 @@ Add to your AI tool's MCP config:
 {
   "mcpServers": {
     "qaclaw": {
+      "command": "npx",
+      "args": ["qaclaw@latest"],
+      "env": {
+        "GOOGLE_API_KEY": "your-key",
+        "QA_TARGET_URL": "http://localhost:3100"
+      }
+    }
+  }
+}
+```
+
+No clone or install needed. If you have the repo checked out locally, you can point directly at it instead:
+
+```json
+{
+  "mcpServers": {
+    "qaclaw": {
       "command": "node",
       "args": ["mcp.js"],
       "cwd": "/path/to/qaclaw"

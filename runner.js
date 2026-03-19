@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import "dotenv/config";
 import { logStream, printTokens, makeStagehandLogger } from "./src/log.js";
 import { CONFIG } from "./src/config.js";

@@ -4,6 +4,9 @@
   "type": "module",
   "description": "Autonomous QA agent - runs browser-based tests via MCP",
   "main": "runner.js",
+  "bin": {
+    "qaclaw": "./runner.js"
+  },
   "scripts": {
     "test": "node runner.js",
     "mcp": "node mcp.js"
