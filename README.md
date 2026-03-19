@@ -2,75 +2,64 @@
 
 An autonomous QA agent exposed over MCP. Give it test instructions in plain English - it opens a headless browser, executes the steps, handles failures, and returns pass/fail results.
 
-The agent uses [Stagehand](https://github.com/browserbase/stagehand) to drive a real browser with an AI model that can see the page, decide what to click, and recover when things go wrong. The MCP server is just the transport layer - the agent is `qa-runner.js`.
+The agent uses [Stagehand](https://github.com/browserbase/stagehand) to drive a real browser with an AI model that can see the page, decide what to click, and recover when things go wrong. The MCP server is just the transport layer - the agent is `runner.js`.
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  Your AI tool (Claude Code, Cursor, Copilot, etc.)      │
-│  ── the caller. Sends test instructions, relays answers  │
-└──────────────────────┬──────────────────────────────────┘
-                       │ MCP (stdio)
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│  mcp-server.js - transport layer                         │
-│  Exposes two tools: `test` and `respond`.                │
-│  Spawns qa-runner.js as a child process.                 │
-│  Bridges communication via temp files (questions/answers)│
-│  Has no reasoning - just plumbing.                       │
-└──────────────────────┬──────────────────────────────────┘
-                       │ child process + file IPC
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│  qa-runner.js - the agent                                │
-│                                                          │
-│  Has its own reasoning loop:                             │
-│  1. Preflight planner breaks prompt into steps           │
-│  2. For each step, Stagehand's agent.execute() runs:     │
-│     screenshot → LLM decides action → execute → repeat   │
-│  3. Stuck detection triggers model escalation or asks    │
-│     the caller for help (via the question/answer bridge) │
-│  4. Audit phase verifies expected outcomes               │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Caller["Your AI tool\n(Claude Code, Cursor, Copilot, etc.)\nthe caller — sends test instructions, relays answers"]
+    MCP["mcp-server.js — transport layer\nExposes test and respond tools\nSpawns runner.js as a child process\nBridges communication via temp files\nNo reasoning — just plumbing"]
+    Agent["runner.js — the agent\n1. Preflight planner breaks prompt into steps\n2. Stagehand agent.execute() loop per step\n3. Stuck detection → model escalation or ask caller\n4. Audit phase verifies expected outcomes"]
+
+    Caller -->|"MCP (stdio)"| MCP
+    MCP -->|"child process + file IPC"| Agent
 ```
 
 ### Communication flow
 
 **Happy path** - test runs without questions:
 
-```
-Caller                    MCP server              qa-runner (agent)
-  │                           │                         │
-  │── test(prompt) ──────────→│                         │
-  │                           │── spawn ───────────────→│
-  │                           │                         │── plan steps
-  │                           │                         │── open browser
-  │                           │   (blocks)              │── execute steps
-  │                           │                         │── audit outcomes
-  │                           │←── exit(0) ────────────│
-  │←── { status: completed } ─│                         │
+```mermaid
+sequenceDiagram
+    participant Caller
+    participant MCP as mcp-server.js
+    participant Agent as runner.js
+
+    Caller->>MCP: test(prompt)
+    MCP->>Agent: spawn
+    activate Agent
+    Note over Agent: plan steps
+    Note over Agent: open browser
+    Note over Agent: execute steps
+    Note over Agent: audit outcomes
+    Agent-->>MCP: exit(0)
+    deactivate Agent
+    MCP-->>Caller: { status: completed }
 ```
 
 **With clarification** - agent gets stuck and needs input:
 
-```
-Caller                    MCP server              qa-runner (agent)
-  │                           │                         │
-  │── test(prompt) ──────────→│                         │
-  │                           │── spawn ───────────────→│
-  │                           │                         │── starts executing
-  │                           │                         │── gets stuck
-  │                           │                         │── writes question file
-  │                           │←── (detects file) ──────│
-  │←── { question: "..." } ──│                         │   (polls for answer)
-  │                           │                         │
-  │── respond(answer) ───────→│                         │
-  │                           │── writes answer file ──→│
-  │                           │                         │── reads answer, continues
-  │                           │   (blocks)              │── finishes
-  │                           │←── exit(0) ────────────│
-  │←── { status: completed } ─│                         │
+```mermaid
+sequenceDiagram
+    participant Caller
+    participant MCP as mcp-server.js
+    participant Agent as runner.js
+
+    Caller->>MCP: test(prompt)
+    MCP->>Agent: spawn
+    activate Agent
+    Note over Agent: starts executing
+    Note over Agent: gets stuck
+    Agent-)MCP: writes question file
+    MCP-->>Caller: { question: "..." }
+    Note over Agent: polls for answer file
+    Caller->>MCP: respond(answer)
+    MCP-)Agent: writes answer file
+    Note over Agent: reads answer, continues
+    Agent-->>MCP: exit(0)
+    deactivate Agent
+    MCP-->>Caller: { status: completed }
 ```
 
 ### Why this split?
@@ -161,19 +150,13 @@ Output: same shape as test
 
 ### Protocol
 
-```
-test(prompt)
-    │
-    ├── status: completed → done, report results
-    ├── status: failed    → done, report failure
-    └── status: waiting_clarification
-            │
-            │  question: "..."
-            │
-            ▼
-        respond(session_id, answer)
-            │
-            └── (repeat: check status)
+```mermaid
+flowchart TD
+    A["test(prompt)"] --> B{status?}
+    B -->|completed| C[done — report results]
+    B -->|failed| D[done — report failure]
+    B -->|waiting_clarification| E["respond(session_id, answer)"]
+    E --> B
 ```
 
 ## Commands and Skills
@@ -198,7 +181,7 @@ Handle clarifications by calling `respond`. Report pass/fail results.
 ## Standalone CLI
 
 ```bash
-node qa-runner.js "Navigate to /users, create a new user, verify it appears in the list"
+node runner.js "Navigate to /users, create a new user, verify it appears in the list"
 ```
 
 In CLI mode, clarifications are handled interactively via stdin instead of the MCP bridge.
@@ -215,7 +198,12 @@ Each step runs via `stagehand.agent.execute()` - the inner LLM sees the page, de
 
 ### Model escalation
 
-Primary model → fallback model → ask the caller. Each tier gets a chance before escalating. If both models are the same, it goes straight to asking the caller.
+```mermaid
+flowchart LR
+    A[Primary model] -->|stuck| B[Fallback model]
+    B -->|stuck| C[Ask caller]
+    C -->|answer| A
+```
 
 ### Clarifications
 
@@ -290,4 +278,4 @@ Set `QA_HEADLESS=false` to open a visible browser window. Useful for debugging o
 
 ## Logs
 
-All output is written to `.qa-agent/qa-runner.log`. MCP responses are truncated to ~8000 chars - check the log for the full trace.
+All output is written to `.qa-agent/runner.log`. MCP responses are truncated to ~8000 chars - check the log for the full trace.
