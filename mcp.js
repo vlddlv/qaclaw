@@ -74,14 +74,22 @@ function startQaRunner(sessionId, prompt) {
   return session;
 }
 
+const HEARTBEAT_MS = 3 * 60 * 1000;
+
 function waitForTerminal(session, timeoutMs = 60 * 60 * 1000) {
   const TERMINAL = new Set(["completed", "failed", "waiting_clarification"]);
   return new Promise((resolve, reject) => {
     if (TERMINAL.has(session.status)) { resolve(); return; }
-    const timer = setTimeout(() => reject(new Error("QA test timed out")), timeoutMs);
+    const deadline = setTimeout(() => reject(new Error("QA test timed out")), timeoutMs);
+    const heartbeat = setTimeout(() => {
+      clearTimeout(deadline);
+      session.events.off("statusChange", handler);
+      resolve("heartbeat");
+    }, HEARTBEAT_MS);
     const handler = (status) => {
       if (TERMINAL.has(status)) {
-        clearTimeout(timer);
+        clearTimeout(deadline);
+        clearTimeout(heartbeat);
         session.events.off("statusChange", handler);
         resolve();
       }
@@ -114,13 +122,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "test",
       description:
-        "Run a QA test in a headless browser. Blocks until the test completes, fails, or needs input.\n\n" +
-        "Returns JSON with: session_id, status (completed|failed|waiting_clarification), output, and optionally question.\n\n" +
+        "Run a QA test in a headless browser. Blocks until the test completes, fails, needs input, or 3 minutes pass.\n\n" +
+        "Returns JSON with: session_id, status (completed|failed|waiting_clarification|running), output, and optionally question.\n\n" +
         "Protocol:\n" +
         "1. Call this tool with a prompt describing the test.\n" +
-        "2. If the response has a `question` field, answer it by calling `respond` with the session_id and your answer.\n" +
-        "3. `respond` blocks again and returns the same shape. Repeat until status is `completed` or `failed`.\n" +
-        "4. Parse the output for pass/fail verdicts and report results.",
+        "2. If status is `running`, the test is still in progress. Call `respond` with the session_id and no answer to keep waiting.\n" +
+        "3. If status is `waiting_clarification`, a `question` field is present. Call `respond` with your answer.\n" +
+        "4. Repeat until status is `completed` or `failed`, then report results.",
       inputSchema: {
         type: "object",
         properties: {
@@ -132,15 +140,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "respond",
       description:
-        "Answer a question from a running QA test, then block until it completes, fails, or asks another question. " +
-        "Returns the same JSON shape as the `test` tool.",
+        "Continue waiting on a running QA test, or answer a question from it. " +
+        "Call with just session_id (no answer) to poll for progress. Call with session_id and answer to respond to a question. " +
+        "Blocks up to 3 minutes then returns current status. Repeat until status is `completed` or `failed`.",
       inputSchema: {
         type: "object",
         properties: {
           session_id: { type: "string", description: "Session ID from the previous test or respond call" },
-          answer: { type: "string", description: "Your answer to the pending question" },
+          answer: { type: "string", description: "Your answer to the pending question. Omit if just polling for progress." },
         },
-        required: ["session_id", "answer"],
+        required: ["session_id"],
       },
     },
   ],
@@ -154,7 +163,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const session = startQaRunner(sessionId, args.prompt);
 
     try {
-      await waitForTerminal(session);
+      const reason = await waitForTerminal(session);
+      if (reason === "heartbeat") session.status = "running";
     } catch (e) {
       return { content: [{ type: "text", text: JSON.stringify({ error: e.message, status: session.status }) }] };
     }
@@ -170,15 +180,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return { content: [{ type: "text", text: JSON.stringify({ error: "Session not found" }) }] };
     }
 
-    const answerFile = sessionFile(args.session_id, "answer");
-    writeFileSync(answerFile, JSON.stringify({ answer: args.answer }));
-    const questionFile = sessionFile(args.session_id, "question");
-    if (existsSync(questionFile)) unlinkSync(questionFile);
-    session.pendingQuestion = null;
+    if (args.answer) {
+      const answerFile = sessionFile(args.session_id, "answer");
+      writeFileSync(answerFile, JSON.stringify({ answer: args.answer }));
+      const questionFile = sessionFile(args.session_id, "question");
+      if (existsSync(questionFile)) unlinkSync(questionFile);
+      session.pendingQuestion = null;
+    }
     session.status = "running";
 
     try {
-      await waitForTerminal(session);
+      const reason = await waitForTerminal(session);
+      if (reason === "heartbeat") session.status = "running";
     } catch (e) {
       return { content: [{ type: "text", text: JSON.stringify({ error: e.message, status: session.status }) }] };
     }
