@@ -1,6 +1,6 @@
 {
   "name": "qaclaw",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "type": "module",
   "description": "Autonomous QA agent - runs browser-based tests via MCP",
   "main": "runner.js",
@@ -11,7 +11,17 @@
     "test": "node runner.js",
     "mcp": "node mcp.js"
   },
-  "keywords": ["mcp", "claude-code", "qa", "testing", "browser-automation", "stagehand", "playwright", "ai-testing", "autonomous-qa"],
+  "keywords": [
+    "mcp",
+    "claude-code",
+    "qa",
+    "testing",
+    "browser-automation",
+    "stagehand",
+    "playwright",
+    "ai-testing",
+    "autonomous-qa"
+  ],
   "dependencies": {
     "@browserbasehq/stagehand": "^3.1.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
