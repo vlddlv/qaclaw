@@ -19,13 +19,17 @@ npm install -g qaclaw
 
 Or use directly without installing via `npx qaclaw@latest`.
 
-Create a `.env` file with the API key for your chosen model provider:
+### API keys
+
+**MCP users** — set your key in the MCP config `env` block ([shown below](#mcp-configuration)). No `.env` file needed.
+
+**CLI users** — export in your shell profile or use a `.env` file in the working directory:
 
 ```bash
-# Pick the one that matches your QA_MODEL provider
-GOOGLE_API_KEY=your-key        # for google/* models (default)
-ANTHROPIC_API_KEY=your-key     # for anthropic/* models
-OPENAI_API_KEY=your-key        # for openai/* models
+# Set the key for your chosen provider (pick one)
+export GOOGLE_API_KEY=your-key       # for google/* models (default)
+export ANTHROPIC_API_KEY=your-key    # for anthropic/* models
+export OPENAI_API_KEY=your-key       # for openai/* models
 ```
 
 ## CLI
