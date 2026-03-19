@@ -25,8 +25,8 @@ function startQaRunner(sessionId, prompt) {
   killStaleRunners();
 
   const env = { ...process.env, QA_MCP_MODE: "1", QA_SESSION_ID: sessionId };
-  const child = spawn("node", ["runner.js", prompt], {
-    cwd: import.meta.dirname,
+  const child = spawn("node", [join(import.meta.dirname, "runner.js"), prompt], {
+    cwd: process.cwd(),
     env,
     stdio: ["pipe", "pipe", "pipe"],
   });

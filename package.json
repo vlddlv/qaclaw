@@ -1,6 +1,6 @@
 {
   "name": "qaclaw",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "type": "module",
   "description": "Autonomous QA agent - runs browser-based tests via MCP",
   "main": "runner.js",
