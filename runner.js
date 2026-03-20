@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import "dotenv/config";
+import { readdirSync, statSync, unlinkSync, existsSync } from "fs";
+import { join } from "path";
 import { logStream, printTokens, makeStagehandLogger } from "./src/log.js";
 import { CONFIG } from "./src/config.js";
 import { askHuman, makeHumanQueue } from "./src/bridge.js";
@@ -8,6 +10,38 @@ import { taskKey, get as getRecipe } from "./src/recipes.js";
 import { collapseLinearChain, buildWaves, runPreflight } from "./src/planner.js";
 import { runStep, splitPrompt } from "./src/step.js";
 import { Stagehand } from "@browserbasehq/stagehand";
+
+// ─── Cache cleanup ─────────────────────────────────────────────────────────────
+
+function cleanCache() {
+  const cacheDir = "./.qa-agent/stagehand-cache";
+  if (!existsSync(cacheDir)) return;
+  const maxAgeMs    = CONFIG.cacheTtlDays * 24 * 60 * 60 * 1000;
+  const maxSizeBytes = CONFIG.cacheMaxMb * 1024 * 1024;
+  const now = Date.now();
+  let files;
+  try {
+    files = readdirSync(cacheDir)
+      .map(name => {
+        const fp = join(cacheDir, name);
+        try {
+          const stat = statSync(fp);
+          return stat.isFile() ? { path: fp, mtime: stat.mtimeMs, size: stat.size } : null;
+        } catch { return null; }
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.mtime - b.mtime);
+  } catch { return; }
+
+  let total = files.reduce((s, f) => s + f.size, 0);
+  let removed = 0;
+  for (const f of files) {
+    if (now - f.mtime > maxAgeMs || total > maxSizeBytes) {
+      try { unlinkSync(f.path); total -= f.size; removed++; } catch {}
+    }
+  }
+  if (removed > 0) console.log(`\n🧹 Cache cleaned: removed ${removed} stale file(s)`);
+}
 
 // ─── Graceful shutdown ────────────────────────────────────────────────────────
 
@@ -55,6 +89,7 @@ async function main() {
     },
   });
 
+  cleanCache();
   stagehandRef = stagehand;
   await stagehand.init();
 

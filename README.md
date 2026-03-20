@@ -141,6 +141,8 @@ All configuration is via environment variables.
 | `QA_VIEWPORT_WIDTH` | `1920` | Browser viewport width |
 | `QA_VIEWPORT_HEIGHT` | `1080` | Browser viewport height |
 | `QA_CHROME_PROFILE` | (see tips) | Path to a Chrome user data dir |
+| `QA_CACHE_TTL_DAYS` | `7` | Delete stagehand cache entries older than N days |
+| `QA_CACHE_MAX_MB` | `500` | Delete oldest cache entries when total exceeds N MB |
 
 Model format is `provider/model-name`. The agent picks the right API key based on the provider prefix.
 

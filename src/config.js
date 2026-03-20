@@ -15,6 +15,8 @@ export const CONFIG = {
   viewportHeight: parseInt(process.env.QA_VIEWPORT_HEIGHT || "1080", 10),
   // Set QA_CHROME_PROFILE in .env to reuse a logged-in Chrome session.
   chromeProfile:  process.env.QA_CHROME_PROFILE,
+  cacheTtlDays:   parseInt(process.env.QA_CACHE_TTL_DAYS || "7", 10),
+  cacheMaxMb:     parseInt(process.env.QA_CACHE_MAX_MB   || "500", 10),
 };
 
 export function parseModel(modelStr) {

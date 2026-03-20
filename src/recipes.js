@@ -8,13 +8,47 @@ export function taskKey(prompt) {
   return prompt.trim().replace(/\s+/g, " ").slice(0, 200);
 }
 
+/** Extracts the ordered sequence of unique URL pathnames visited in a recipe. */
+function extractUrlPattern(steps) {
+  return [...new Set(
+    steps
+      .filter(s => s.includes("[navigate]"))
+      .map(s => {
+        const m = s.match(/\[navigate\]\s+(\S+)/);
+        if (!m) return null;
+        try { return new URL(m[1]).pathname; } catch { return m[1]; }
+      })
+      .filter(Boolean)
+  )];
+}
+
 function load() {
   if (!existsSync(FILE)) return {};
   try { return JSON.parse(readFileSync(FILE, "utf8")); } catch { return {}; }
 }
 
-export function get(key) {
-  return load()[key];
+/**
+ * Returns a recipe for the given key. Falls back to URL pattern matching
+ * when no exact key match exists and urlHints are provided.
+ */
+export function get(key, urlHints = []) {
+  const recipes = load();
+
+  if (recipes[key]) return recipes[key];
+  if (urlHints.length === 0) return null;
+
+  let best = null;
+  let bestScore = 0;
+  for (const recipe of Object.values(recipes)) {
+    if (!recipe.urlPattern?.length) continue;
+    const matches = recipe.urlPattern.filter(p => urlHints.some(h => p.includes(h) || h.includes(p)));
+    const score = matches.length / recipe.urlPattern.length;
+    if (score >= 0.5 && score > bestScore) {
+      best = recipe;
+      bestScore = score;
+    }
+  }
+  return best;
 }
 
 export function save(key, actions, agentSummary, clarifications = []) {
@@ -34,6 +68,7 @@ export function save(key, actions, agentSummary, clarifications = []) {
   const recipes = load();
   recipes[key] = {
     steps,
+    urlPattern: extractUrlPattern(steps),
     agentSummary: agentSummary?.slice(0, 400),
     clarifications,
     savedAt: new Date().toISOString(),
