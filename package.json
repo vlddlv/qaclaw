@@ -1,6 +1,6 @@
 {
   "name": "qaclaw",
-  "version": "2.0.12",
+  "version": "2.0.13",
   "type": "module",
   "description": "Autonomous QA agent - runs browser-based tests via MCP",
   "main": "runner.js",
@@ -12,6 +12,11 @@
     "mcp": "node mcp.js"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vlddlv/qaclaw.git"
+  },
+  "homepage": "https://github.com/vlddlv/qaclaw#readme",
   "keywords": [
     "mcp",
     "mcp-server",
