@@ -14,7 +14,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vlddlv/qaclaw.git"
+    "url": "git+https://github.com/vlddlv/qaclaw.git"
   },
   "homepage": "https://github.com/vlddlv/qaclaw#readme",
   "keywords": [
